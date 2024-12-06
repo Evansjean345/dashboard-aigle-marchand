@@ -46,7 +46,7 @@ export const AddCommercials = () => {
         setPassword("");
         setConfirmPassword("");
         setError("");
-        onOpenChange(false); // Fermer le modal
+        onOpenChange(); // Fermer le modal
         await window.location.reload();
       } else {
         const data = await response.json();

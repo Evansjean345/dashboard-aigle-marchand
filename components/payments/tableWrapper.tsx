@@ -19,61 +19,37 @@ import {
 } from "@nextui-org/react";
 import Link from "next/link";
 
-const columns = [
-  { name: "Référence", uid: "reference" },
-  { name: "Montant", uid: "amount" },
-  { name: "Devise", uid: "currency" },
-  { name: "Type", uid: "transactionType" },
-  { name: "Statut", uid: "status" },
-  { name: "Méthode de paiement", uid: "paymentMethod" },
-  { name: "Description", uid: "description" },
-  { name: "Opérateur", uid: "provider" },
-  { name: "Code du pays", uid: "countryCode" },
-  { name: "Numéro", uid: "phoneNumber" },
-  { name: "Raison de l'échec", uid: "failureReason" },
-  { name: "Date de création", uid: "createdAt" },
-  { name: "Date de mise à jour", uid: "updatedAt" },
-  { name: "Actions", uid: "actions" },
-];
+// Définition du type pour une transaction
+interface Transaction {
+  transactionId: string;
+  reference: string;
+  amount: number;
+  currency: string;
+  transactionType: string;
+  status: string;
+  paymentMethod: string;
+  description: string;
+  provider: string;
+  countryCode: string;
+  phoneNumber: string;
+  failureReason: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-const TableWrapper = () => {
-  const [transactions, setTransactions] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+// Définition des props que le composant accepte
+interface TableWrapperProps {
+  transactions: Transaction[];
+}
+
+const TableWrapper: React.FC<TableWrapperProps> = ({ transactions }) => {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const transactionsPerPage = 5;
 
-  // État pour le modal
-  const [transactionDetails, setTransactionDetails] = useState(null); // Détails de la transaction
-  const { isOpen, onOpen, onClose } = useDisclosure(); // Hook pour gérer le modal
-
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/transactions`
-        );
-        const data = await res.json();
-
-        const transformedData = data.map((transaction) => ({
-          ...transaction,
-          provider: transaction.paymentDetails?.provider || "N/A",
-          countryCode: transaction.paymentDetails?.country_code || "N/A",
-          phoneNumber: transaction.paymentDetails?.phone_number || "N/A",
-          failureReason: transaction.failureReason || "Aucune",
-          description: transaction.description || "Aucune",
-        }));
-
-        setTransactions(transformedData);
-      } catch (error) {
-        console.error(
-          "Erreur lors de la récupération des transactions:",
-          error
-        );
-      }
-    };
-
-    fetchTransactions();
-  }, []);
+  const [transactionDetails, setTransactionDetails] =
+    useState<Transaction | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Filtrer les transactions en fonction du terme de recherche
   const filteredTransactions = transactions.filter((transaction) =>
@@ -102,21 +78,37 @@ const TableWrapper = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
-  // Fonction pour récupérer les détails d'une transaction par référence
-  const fetchTransactionDetails = async (reference) => {
+  const fetchTransactionDetails = async (reference: string) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/transactions/${reference}`
       );
       if (!res.ok) throw new Error("Transaction introuvable");
-      const data = await res.json();
-      setTransactionDetails(data); // Met à jour les données affichées dans le modal
-      onOpen(); // Ouvre le modal
+      const data: Transaction = await res.json();
+      setTransactionDetails(data);
+      onOpen();
     } catch (error) {
       console.error("Erreur :", error.message);
       setTransactionDetails(null);
     }
   };
+
+  const columns = [
+    { uid: "reference", name: "Référence" },
+    { uid: "amount", name: "Montant" },
+    { uid: "currency", name: "Devise" },
+    { uid: "transactionType", name: "Type de transaction" },
+    { uid: "status", name: "Statut" },
+    { uid: "paymentMethod", name: "Méthode de paiement" },
+    { uid: "description", name: "Description" },
+    { uid: "provider", name: "Fournisseur" },
+    { uid: "countryCode", name: "Code pays" },
+    { uid: "phoneNumber", name: "Numéro de téléphone" },
+    { uid: "failureReason", name: "Raison de l'échec" },
+    { uid: "createdAt", name: "Date de création" },
+    { uid: "updatedAt", name: "Date de mise à jour" },
+    { uid: "actions", name: "Actions" },
+  ];
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
@@ -158,7 +150,6 @@ const TableWrapper = () => {
               <TableCell>{transaction.paymentMethod}</TableCell>
               <TableCell>{transaction.description}</TableCell>
               <TableCell>
-                {" "}
                 {transaction.provider === "wave" ? (
                   <img src="/wave.png" alt="" className="h-8 w-8" />
                 ) : transaction.provider === "orange" ? (

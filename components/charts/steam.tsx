@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
 import Chart, { Props } from "react-apexcharts";
 
+type SeriesData = {
+  name: string;
+  data: number[];
+};
+
 export const Steam = () => {
-  const [series, setSeries] = useState<Props["series"]>([]);
+  const [series, setSeries] = useState<SeriesData[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all"); // Filtrage par période
   const [statusFilter, setStatusFilter] = useState("all"); // Filtrage par statut
   const [theme, setTheme] = useState("dark"); // Thème clair/sombre
-  const [selectedTransaction, setSelectedTransaction] = useState(null); // Détails d'une transaction
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null); // Détails d'une transaction
   const [totals, setTotals] = useState({
     withdrawal: 0,
     payout: 0,
@@ -78,8 +83,8 @@ export const Steam = () => {
         // Convertir les données pour ApexCharts
         const formattedSeries = Object.entries(groupedData).map(
           ([key, values]) => ({
-            name: key, // Exemple : "withdrawal", "payout", "airtime"
-            data: values.amounts,
+            name: key,
+            data: (values as { dates: string[]; amounts: number[] }).amounts,
           })
         );
 
@@ -113,8 +118,12 @@ export const Steam = () => {
       toolbar: { show: false },
       events: {
         dataPointSelection: (event, chartContext, { dataPointIndex }) => {
-          const transaction = series[0]?.data[dataPointIndex]; // Exemple avec "withdrawal"
-          setSelectedTransaction(transaction);
+          if (series[0] && Array.isArray(series[0].data)) {
+            const transaction = series[0].data[dataPointIndex]; // Exemple avec "withdrawal"
+            setSelectedTransaction(transaction);
+          } else {
+            console.error("Données de série non valides.");
+          }
         },
       },
     },

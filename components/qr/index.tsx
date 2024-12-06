@@ -99,7 +99,7 @@ export const Qr = () => {
         <div className="flex gap-12 mt-8">
           <Input
             type="number"
-            value={count}
+            value={count.toString()}
             onChange={(e) =>
               setCount(Math.min(Math.max(parseInt(e.target.value, 10), 1), 500))
             }

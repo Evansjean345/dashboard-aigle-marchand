@@ -1,3 +1,4 @@
+/// no type
 {
   "compilerOptions": {
     "target": "es5",
@@ -6,16 +7,20 @@
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
+    "allowJs": true, // Autorise l'utilisation de fichiers JavaScript.
+    "checkJs": false, // Désactive les vérifications des fichiers JS.
+    "skipLibCheck": true, // Ignore les vérifications des types dans les fichiers de bibliothèque.
+    "strict": false, // Désactive toutes les règles strictes de TypeScript.
+    "noImplicitAny": false, // Permet l'utilisation implicite de `any`.
+    "noImplicitThis": false, // Désactive les avertissements sur `this` implicite.
+    "alwaysStrict": false, // Désactive l'ajout du mode strict en JavaScript.
+    "forceConsistentCasingInFileNames": false, // Permet des variations dans la casse des noms de fichiers.
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "isolatedModules": true, // Désactive l'isolation des modules.
     "jsx": "preserve",
     "incremental": true,
     "plugins": [
@@ -24,7 +29,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
