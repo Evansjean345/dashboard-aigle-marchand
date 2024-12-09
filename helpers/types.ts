@@ -1,7 +1,7 @@
 // FORMS
 
 export type LoginFormType = {
-  email: string;
+  phone: string;
   password: string;
 };
 

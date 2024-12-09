@@ -161,7 +161,9 @@ export const Steam = () => {
 
   return (
     <div
-      className={`w-full z-20 ${theme === "dark" ? "bg-black" : "bg-white"}`}
+      className={`w-full z-20 ${
+        theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+      }`}
     >
       <div className="flex justify-between items-center pt-2 mb-4 px-4">
         <div className="flex gap-4">
@@ -174,8 +176,8 @@ export const Steam = () => {
               }}
               className={`${
                 activeFilter === key
-                  ? "bg-[#002d61] text-xs p-2 rounded-lg"
-                  : "hover:bg-[#002d61] hover:p-2 hover:text-xs hover:rounded-lg transition-all ease-in-out"
+                  ? "bg-[#002d61] text-xs p-2 rounded-lg  "
+                  : "hover:bg-[#002d61] hover:p-2 hover:text-xs hover:rounded-lg transition-all ease-in-out "
               }`}
             >
               {key === "7days"

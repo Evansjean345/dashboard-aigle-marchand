@@ -7,50 +7,74 @@ import { Button, Input } from "@nextui-org/react";
 import { Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 export const Login = () => {
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   const initialValues: LoginFormType = {
-    email: "admin@acme.com",
-    password: "admin",
+    phone: "",
+    password: "",
   };
 
   const handleLogin = useCallback(
     async (values: LoginFormType) => {
-      // `values` contains email & password. You can use provider to connect user
-
-      await createAuthCookie();
-      router.replace("/");
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+          }
+        );
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "login failed");
+        }
+        const data = await response.json();
+        localStorage.setItem("authToken", data.value);
+        await createAuthCookie();
+        router.replace("/");
+        console.log(data);
+        
+      } catch (error: any) {
+        setError(error.message || "An error occured during  login");
+      }
     },
     [router]
   );
 
   return (
     <>
-      <div className='text-center text-[25px] font-bold mb-6'>Login</div>
+      <div className="text-center text-[25px] font-bold mb-6">Login</div>
+
+      {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
       <Formik
         initialValues={initialValues}
         validationSchema={LoginSchema}
-        onSubmit={handleLogin}>
+        onSubmit={handleLogin}
+      >
         {({ values, errors, touched, handleChange, handleSubmit }) => (
           <>
-            <div className='flex flex-col w-1/2 gap-4 mb-4'>
+            <div className="flex flex-col w-1/2 gap-4 mb-4">
               <Input
-                variant='bordered'
-                label='Email'
-                type='email'
-                value={values.email}
-                isInvalid={!!errors.email && !!touched.email}
-                errorMessage={errors.email}
-                onChange={handleChange("email")}
+                variant="bordered"
+                label="Phone"
+                type="text"
+                value={values.phone}
+                isInvalid={!!errors.phone && !!touched.phone}
+                errorMessage={errors.phone}
+                onChange={handleChange("phone")}
               />
               <Input
-                variant='bordered'
-                label='Password'
-                type='password'
+                variant="bordered"
+                label="Password"
+                type="password"
                 value={values.password}
                 isInvalid={!!errors.password && !!touched.password}
                 errorMessage={errors.password}
@@ -60,17 +84,18 @@ export const Login = () => {
 
             <Button
               onPress={() => handleSubmit()}
-              variant='flat'
-              color='primary'>
+              variant="flat"
+              color="primary"
+            >
               Login
             </Button>
           </>
         )}
       </Formik>
 
-      <div className='font-light text-slate-400 mt-4 text-sm'>
+      <div className="font-light text-slate-400 mt-4 text-sm">
         Don&apos;t have an account ?{" "}
-        <Link href='/register' className='font-bold'>
+        <Link href="/register" className="font-bold">
           Register here
         </Link>
       </div>

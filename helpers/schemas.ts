@@ -1,9 +1,9 @@
 import { object, ref, string } from "yup";
 
 export const LoginSchema = object().shape({
-  email: string()
-    .email("This field must be an email")
-    .required("Email is required"),
+  phone: string()
+    .required("This field must be an email")
+    .matches(/^\d+$/, "Phone number must be numeric"),
   password: string().required("Password is required"),
 });
 

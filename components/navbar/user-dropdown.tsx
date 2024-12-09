@@ -16,8 +16,13 @@ export const UserDropdown = () => {
   const router = useRouter();
 
   const handleLogout = useCallback(async () => {
-    await deleteAuthCookie();
-    router.replace("/login");
+    try {
+      await deleteAuthCookie()
+      localStorage.removeItem("authToken")
+      router.replace("/login")
+    } catch (error : any) {
+       console.error("logout failed:", error)
+    }
   }, [router]);
 
   return (
@@ -40,8 +45,9 @@ export const UserDropdown = () => {
           key="profile"
           className="flex flex-col justify-start w-full items-start"
         >
+          {/*
           <p>Signed in as</p>
-          <p>zoey@example.com</p>
+          <p>zoey@example.com</p> */}
         </DropdownItem>
         {/*    <DropdownItem key='settings'>My Settings</DropdownItem>
         <DropdownItem key='team_settings'>Team Settings</DropdownItem>
