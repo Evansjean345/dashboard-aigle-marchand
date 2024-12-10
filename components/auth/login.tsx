@@ -8,10 +8,12 @@ import { Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { Loader } from "./loader";
 
 export const Login = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false); // État pour gérer le loader
 
   const initialValues: LoginFormType = {
     phone: "",
@@ -20,6 +22,7 @@ export const Login = () => {
 
   const handleLogin = useCallback(
     async (values: LoginFormType) => {
+      setLoading(true); // Afficher le loader
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
@@ -81,13 +84,17 @@ export const Login = () => {
               />
             </div>
 
-            <Button
-              onPress={() => handleSubmit()}
-              variant="flat"
-              color="primary"
-            >
-              Login
-            </Button>
+            {loading ? (
+              <Loader />
+            ) : (
+              <Button
+                onPress={() => handleSubmit()}
+                variant="flat"
+                color="primary"
+              >
+                Login
+              </Button>
+            )}
           </>
         )}
       </Formik>

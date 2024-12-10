@@ -7,7 +7,7 @@ import {
   Navbar,
   NavbarItem,
 } from "@nextui-org/react";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { DarkModeSwitch } from "./darkmodeswitch";
 import { useRouter } from "next/navigation";
 import { deleteAuthCookie } from "@/actions/auth.action";
@@ -15,14 +15,19 @@ import { UsersIcon } from "../icons/breadcrumb/users-icon";
 
 export const UserDropdown = () => {
   const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
 
   const handleLogout = useCallback(async () => {
+    document.body.style.filter = "blur(5px)"; // Appliquer le flou au body
     try {
       await deleteAuthCookie();
       localStorage.removeItem("authToken");
       router.replace("/login");
     } catch (error: any) {
       console.error("logout failed:", error);
+    } finally {
+      setIsLoggingOut(false);
+      document.body.style.filter = "none"; // Réinitialiser le flou après la déconnexion
     }
   }, [router]);
 
