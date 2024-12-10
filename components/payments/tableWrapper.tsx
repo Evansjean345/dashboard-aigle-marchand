@@ -158,6 +158,8 @@ const TableWrapper: React.FC<TableWrapperProps> = ({ transactions }) => {
                   <img src="/mtn.png" alt="" className="h-8 w-8" />
                 ) : transaction.provider === "moov" ? (
                   <img src="/moov.png" alt="" className="h-8 w-8" />
+                ) : transaction.transactionType === "airtime" ? (
+                  <img src="/air.png" alt="" className="h-8 w-8" />
                 ) : (
                   "non spécifié"
                 )}
@@ -176,7 +178,7 @@ const TableWrapper: React.FC<TableWrapperProps> = ({ transactions }) => {
                   onPress={() => fetchTransactionDetails(transaction.reference)}
                 >
                   Détails
-                </Button>
+                </Button> 
               </TableCell>
             </TableRow>
           )}

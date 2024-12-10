@@ -11,17 +11,18 @@ import React, { useCallback } from "react";
 import { DarkModeSwitch } from "./darkmodeswitch";
 import { useRouter } from "next/navigation";
 import { deleteAuthCookie } from "@/actions/auth.action";
+import { UsersIcon } from "../icons/breadcrumb/users-icon";
 
 export const UserDropdown = () => {
   const router = useRouter();
 
   const handleLogout = useCallback(async () => {
     try {
-      await deleteAuthCookie()
-      localStorage.removeItem("authToken")
-      router.replace("/login")
-    } catch (error : any) {
-       console.error("logout failed:", error)
+      await deleteAuthCookie();
+      localStorage.removeItem("authToken");
+      router.replace("/login");
+    } catch (error: any) {
+      console.error("logout failed:", error);
     }
   }, [router]);
 
@@ -29,12 +30,7 @@ export const UserDropdown = () => {
     <Dropdown>
       <NavbarItem>
         <DropdownTrigger>
-          <Avatar
-            as="button"
-            color="secondary"
-            size="md"
-            src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-          />
+          <Avatar as="button" color="primary" size="md" src="/user.png" />
         </DropdownTrigger>
       </NavbarItem>
       <DropdownMenu
