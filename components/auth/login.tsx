@@ -8,43 +8,37 @@ import { Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { Loader } from "./loader";
 
 export const Login = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false); // État pour gérer le loader
 
+  // Valeurs par défaut pour une connexion automatique
   const initialValues: LoginFormType = {
-    phone: "",
-    password: "",
+    phone: "0101010101",
+    password: "password",
   };
 
   const handleLogin = useCallback(
     async (values: LoginFormType) => {
-      setLoading(true); // Afficher le loader
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(values),
-          }
-        );
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "login failed");
+        // Vérifie si les valeurs entrées correspondent aux valeurs prédéfinies
+        if (
+          values.phone === initialValues.phone &&
+          values.password === initialValues.password
+        ) {
+          // Simuler la connexion réussie
+          localStorage.setItem("authToken", "mockAuthToken12345"); // Exemple de token simulé
+          await createAuthCookie();
+          router.replace("/"); // Redirige vers la page d'accueil
+          console.log("Connexion réussie avec des valeurs simulées");
+        } else {
+          throw new Error("Identifiants incorrects");
         }
-        const data = await response.json();
-        localStorage.setItem("authToken", data.value);
-        await createAuthCookie();
-        router.replace("/");
-        console.log(data);
       } catch (error: any) {
-        setError(error.message || "An error occured during  login");
+        setError(
+          error.message || "Une erreur est survenue lors de la connexion"
+        );
       }
     },
     [router]
@@ -84,28 +78,16 @@ export const Login = () => {
               />
             </div>
 
-            {loading ? (
-              <Loader />
-            ) : (
-              <Button
-                onPress={() => handleSubmit()}
-                variant="flat"
-                color="primary"
-              >
-                Login
-              </Button>
-            )}
+            <Button
+              onPress={() => handleSubmit()}
+              variant="flat"
+              color="primary"
+            >
+              Login
+            </Button>
           </>
         )}
       </Formik>
-
-      {/*
-       <div className="font-light text-slate-400 mt-4 text-sm">
-        Don&apos;t have an account ?{" "}
-        <Link href="/register" className="font-bold">
-          Register here
-        </Link>
-      </div> */}
     </>
   );
 };

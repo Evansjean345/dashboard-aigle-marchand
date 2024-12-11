@@ -152,7 +152,7 @@ const TableWrapper = () => {
                 )}
               </TableCell>
               <TableCell>
-                {transaction.paymentDetails?.country_code.toUpperCase()}
+                {transaction.paymentDetails?.country_code?.toUpperCase()}
               </TableCell>
               <TableCell>{transaction.paymentDetails?.phone_number}</TableCell>
               <TableCell>
