@@ -6,7 +6,7 @@ import { LoginFormType } from "@/helpers/types";
 import { Button, Input } from "@nextui-org/react";
 import { Formik } from "formik";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Loader } from "./loader";
 
 export const Login = () => {
@@ -19,32 +19,39 @@ export const Login = () => {
     password: "",
   };
 
-  const handleLogin = async (values: LoginFormType) => {
-    setLoading(true); // Afficher le loader
+  const handleLogin = useCallback(
+    async (values: LoginFormType) => {
+      try {
+        setLoading(true);
+        // Correction de l'URL en utilisant des backticks
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+          }
+        );
 
-    try {
-      // Simuler la vérification des informations d'identification
-      setLoading(true);
-      const validPhone = "0101010101";
-      const validPassword = "password";
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "login failed");
+        }
 
-      if (values.phone === validPhone && values.password === validPassword) {
-        // Simuler l'obtention du jeton d'authentification
-        const authToken = "mockAuthToken123";
-        localStorage.setItem("authToken", authToken); // Sauvegarder le token dans le localStorage
-        await createAuthCookie(); // Créer un cookie avec le token
-
-        // Attendre 5 secondes avant de rediriger
-        router.replace("/"); // Redirection après 5 secondes
-      } else {
-        throw new Error("Invalid phone or password");
+        const data = await response.json();
+        localStorage.setItem("authToken", data.value);
+        await createAuthCookie(data.value);
+        router.replace("/"); // Redirection après la connexion
+      } catch (error: any) {
+        setError(error.message || "An error occurred during login");
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      setError(error.message || "An error occurred during login");
-    } finally {
-      setLoading(false); // Masquer le loader
-    }
-  };
+    },
+    [router]
+  );
 
   return (
     <>
@@ -79,7 +86,6 @@ export const Login = () => {
                 onChange={handleChange("password")}
               />
             </div>
-
             {loading ? (
               <Loader />
             ) : (
