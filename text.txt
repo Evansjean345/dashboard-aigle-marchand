@@ -103,3 +103,119 @@ export const Login = () => {
     </>
   );
 };
+
+
+"use client";
+
+import React, { useState } from "react";
+import QRCode from "qrcode";
+import { PDFDocument } from "pdf-lib";
+import { saveAs } from "file-saver";
+import { Button, Input } from "@nextui-org/react";
+
+export const Qr = () => {
+  const [qrCode, setQrCode] = useState("");
+  const [selectedFile, setSelectedFile] = useState("/a5_white.pdf"); // Fichier PDF par défaut
+  const [qrData, setQrData] = useState("Aigle-123456"); // Valeur QR par défaut
+
+  // Charger le fichier PDF sélectionné
+  const loadPdf = async () => {
+    const response = await fetch(selectedFile);
+    const pdfBytes = await response.arrayBuffer();
+    return pdfBytes;
+  };
+
+  // Générer le QR code
+  const generateQRCode = async () => {
+    const qrCodeBase64 = await QRCode.toDataURL(qrData);
+    setQrCode(qrCodeBase64);
+  };
+
+  // Ajouter le QR code au centre du fichier PDF sélectionné
+  const generatePdfWithQrCode = async () => {
+    const pdfBytes = await loadPdf();
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+
+    const qrImageBytes = await fetch(qrCode).then((res) => res.arrayBuffer());
+    const qrImage = await pdfDoc.embedPng(qrImageBytes);
+
+    const pages = pdfDoc.getPages();
+    const firstPage = pages[0];
+
+    const { width, height } = firstPage.getSize();
+    const qrSize = Math.min(width, height) * 0.4; // QR code à 40% de la taille
+
+    const x = (width - qrSize) / 2;
+    const y = (height - qrSize) / 2;
+
+    firstPage.drawImage(qrImage, {
+      x,
+      y,
+      width: qrSize,
+      height: qrSize,
+    });
+
+    const pdfWithQrBytes = await pdfDoc.save();
+    saveAs(new Blob([pdfWithQrBytes]), "qr_code_pdf.pdf");
+  };
+
+  return (
+    <>
+      <div style={{ padding: "20px" }}>
+        <h1 className="text-xl font-semibold">
+          Générateur de QR Code sur un PDF
+        </h1>
+        <br />
+        <div style={{ marginBottom: "20px" }}>
+          <label>Choisissez un fichier PDF :</label>
+          <select
+            value={selectedFile}
+            onChange={(e) => setSelectedFile(e.target.value)}
+          >
+            <option value="/a5_white.pdf">A5 Blanc</option>
+            <option value="/pvc_white.pdf">PVC Blanc</option>
+            <option value="/a5_2_green.pdf">A5 Vert</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "20px" }}>
+          <label>Données du QR Code :</label>
+          <Input
+            type="text"
+            value={qrData}
+            onChange={(e) => setQrData(e.target.value)}
+            placeholder="Entrez vos données"
+          />
+        </div>
+
+        <Button
+          color="primary"
+          onClick={generateQRCode}
+          style={{ marginRight: "10px" }}
+        >
+          Générer le QR Code
+        </Button>
+
+        {qrCode && (
+          <>
+            <div style={{ marginTop: "20px" }}>
+              <img
+                src={qrCode}
+                alt="QR Code"
+                style={{ width: "150px", height: "150px" }}
+              />
+            </div>
+
+            <Button
+              color="success"
+              onClick={generatePdfWithQrCode}
+              style={{ marginTop: "20px" }}
+            >
+              Télécharger le PDF avec QR Code
+            </Button>
+          </>
+        )}
+      </div>
+    </>
+  );
+};

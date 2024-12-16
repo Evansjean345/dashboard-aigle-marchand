@@ -1,12 +1,12 @@
 "use client";
 
-import { createAuthCookie } from "@/actions/auth.action";
+import { createAuthCookie } from "@/actions/auth.action"; // Import pour la création du cookie
 import { LoginSchema } from "@/helpers/schemas";
 import { LoginFormType } from "@/helpers/types";
 import { Button, Input } from "@nextui-org/react";
 import { Formik } from "formik";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader } from "./loader";
 
 export const Login = () => {
@@ -19,22 +19,36 @@ export const Login = () => {
     password: "",
   };
 
+  useEffect(() => {
+    // Vérifie si un jeton est présent dans localStorage ou les cookies
+    const token =
+      localStorage.getItem("authToken") ||
+      document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("userAuth="))
+        ?.split("=")[1];
+    if (token) {
+      window.location.href = "/"; // Redirection vers la page d'accueil si authentifié
+    }
+  }, [router]);
   const handleLogin = async (values: LoginFormType) => {
     setLoading(true); // Afficher le loader
 
     try {
       // Simuler la vérification des informations d'identification
-      setLoading(true);
       const validPhone = "0101010101";
       const validPassword = "password";
 
       if (values.phone === validPhone && values.password === validPassword) {
         // Simuler l'obtention du jeton d'authentification
         const authToken = "mockAuthToken123";
-        localStorage.setItem("authToken", authToken); // Sauvegarder le token dans le localStorage
-        await createAuthCookie(); // Créer un cookie avec le token
+        localStorage.setItem("authToken", authToken); // Sauvegarder le token dans localStorage
 
-        // Attendre 5 secondes avant de rediriger
+        // Créer un cookie côté client
+        document.cookie = `userAuth=${authToken}; path=/; max-age=${
+          60 * 60 * 24 * 7
+        }`; // Cookie valable 7 jours
+
         router.replace("/"); // Redirection après 5 secondes
       } else {
         throw new Error("Invalid phone or password");
