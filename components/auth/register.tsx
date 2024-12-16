@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader } from "./loader";
 
-export const Login = () => {
+export const Register = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
