@@ -15,7 +15,28 @@ export const CardTransactions = () => {
           throw new Error("Erreur lors de la récupération des transactions.");
         }
         const data = await res.json();
-        setTransactions(data.slice(0, 5)); // Limiter à 5 transactions
+
+        // Parse et enrichit les transactions
+        const formattedTransactions = data
+          .slice(0, 5)
+          .map((transaction: any) => {
+            try {
+              if (transaction.paymentDetails) {
+                transaction.paymentDetails = JSON.parse(
+                  transaction.paymentDetails
+                );
+              }
+            } catch (error) {
+              console.error(
+                `Erreur lors du parsing de paymentDetails pour la transaction ID ${transaction.transactionId}`,
+                error
+              );
+              transaction.paymentDetails = {};
+            }
+            return transaction;
+          });
+
+        setTransactions(formattedTransactions);
       } catch (error) {
         console.error("Erreur:", error);
         setTransactions([]);
@@ -44,30 +65,38 @@ export const CardTransactions = () => {
           <div className="flex flex-col gap-6">
             {transactions.map((transaction: any, index: number) => (
               <div key={index} className="grid grid-cols-4 w-full">
+                {/* Image basée sur le provider ou type */}
                 <div className="w-full">
-                  <Avatar
-                    isBordered
-                    color="secondary"
-                    src={
-                      transaction.transactionType === "withdrawal"
-                        ? "withdrawal.png" // Remplacez "img" par l'URL de votre image pour le type "withdrawal"
-                        : transaction.transactionType === "payout"
-                        ? "payout.png" // Remplacez "a" par l'URL de votre image pour le type "payout"
-                        : transaction.transactionType === "airtime"
-                        ? "transfer.png"
-                        : ""
-                    }
-                  />
+                  {transaction.paymentDetails?.provider === "wave" ? (
+                    <img src="/wave.png" alt="Wave" className="h-8 w-8" />
+                  ) : transaction.paymentDetails?.provider === "orange" ? (
+                    <img src="/orange.jpg" alt="Orange" className="h-8 w-8" />
+                  ) : transaction.paymentDetails?.provider === "mtn" ? (
+                    <img src="/mtn.png" alt="MTN" className="h-8 w-8" />
+                  ) : transaction.paymentDetails?.provider === "moov" ? (
+                    <img src="/moov.png" alt="Moov" className="h-8 w-8" />
+                  ) : transaction.transactionType === "airtime" ? (
+                    <img src="/air.png" alt="Airtime" className="h-8 w-8" />
+                  ) : (
+                    <span className="text-default-500 text-sm">
+                      Non spécifié
+                    </span>
+                  )}
                 </div>
+
+                {/* Nom de l'organisation */}
                 <span className="text-default-900 font-semibold">
                   {transaction.organisation?.name || "Nom inconnu"}
                 </span>
+
+                {/* Montant */}
                 <div>
-                  &nbsp; &nbsp;
                   <span className="text-success text-xs">
                     {`${transaction.amount} FCFA` || "0 FCFA"}
                   </span>
                 </div>
+
+                {/* Date de création */}
                 <div>
                   <span className="text-default-500 text-xs">
                     {transaction.createdAt

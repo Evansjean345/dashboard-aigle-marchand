@@ -28,7 +28,7 @@ export const Login = () => {
         .find((row) => row.startsWith("userAuth="))
         ?.split("=")[1];
     if (token) {
-      window.location.href = "/"; // Redirection vers la page d'accueil si authentifié
+      router.push("/"); // Redirection vers la page d'accueil si authentifié
     }
   }, [router]);
   const handleLogin = async (values: LoginFormType) => {

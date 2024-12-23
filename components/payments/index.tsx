@@ -48,12 +48,25 @@ const TableWrapper = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/transactions`
       );
       const data = await res.json();
-      setTransactions(data); // Assurez-vous que `data` est bien un tableau de transactions
+
+      // Désérialisation de `paymentDetails` pour chaque transaction
+      const formattedData = data.map((transaction) => {
+        if (transaction.paymentDetails) {
+          // Si `paymentDetails` est une chaîne JSON, la convertir en objet
+          try {
+            transaction.paymentDetails = JSON.parse(transaction.paymentDetails);
+          } catch (error) {
+            console.error("Erreur de désérialisation de paymentDetails", error);
+          }
+        }
+        return transaction;
+      });
+
+      setTransactions(formattedData); // Assurez-vous que les transactions sont bien formatées
     };
 
     fetchTransactions();
   }, []);
-
   // Filtrer les transactions en fonction du texte de recherche
   const filteredTransactions = transactions.filter((transaction) =>
     Object.values(transaction)
@@ -134,7 +147,7 @@ const TableWrapper = () => {
                   {transaction.status}
                 </span>
               </TableCell>
-              <TableCell>{transaction.paymentMethod}</TableCell>
+              <TableCell>{transaction.paymentDetails?.service}</TableCell>
               <TableCell>{transaction.paymentDetails?.otp}</TableCell>
               <TableCell>
                 {transaction.paymentDetails?.provider === "wave" ? (

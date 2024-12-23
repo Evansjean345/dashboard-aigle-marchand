@@ -178,7 +178,7 @@ const TableWrapper: React.FC<TableWrapperProps> = ({ transactions }) => {
                   onPress={() => fetchTransactionDetails(transaction.reference)}
                 >
                   Détails
-                </Button> 
+                </Button>
               </TableCell>
             </TableRow>
           )}
