@@ -20,6 +20,7 @@ import { SidebarMenu } from "./sidebar-menu";
 import { useSidebarContext } from "../layout/layout-context";
 //import { ChangeLogIcon } from "../icons/sidebar/changelog-icon";
 import { usePathname } from "next/navigation";
+import { ViewIcon } from "../icons/sidebar/view-icon";
 
 export const SidebarWrapper = () => {
   const pathname = usePathname();
@@ -85,6 +86,12 @@ export const SidebarWrapper = () => {
                 title="Compte particulier"
                 href="/commercials"
                 icon={<ReportsIcon />}
+              />
+              <SidebarItem
+                isActive={pathname === "/supply"}
+                title="Approvisionnements"
+                href="/supply"
+                icon={<ViewIcon />}
               />
               <SidebarItem
                 isActive={pathname === "/qr"}
