@@ -233,12 +233,10 @@ export const TableWrapper = () => {
 
   const filteredRequests = provisionRequests
     .filter((request) => {
-      // Appliquer le filtre par statut
       if (statusFilter === "all") return true;
       return request.status === statusFilter;
     })
     .filter((request) => {
-      // Appliquer le filtre de recherche
       return Object.values(request)
         .join(" ")
         .toLowerCase()
@@ -260,35 +258,25 @@ export const TableWrapper = () => {
       <h3 className="text-xl font-semibold">
         Liste des demandes d'approvisionnement
       </h3>
-      <div className="flex justify-center items-center">
-        <Input
-          placeholder="Rechercher des demandes"
+      <div className="flex items-center justify-between mb-4">
+        <input
+          type="text"
+          className="w-1/3 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Rechercher des demandes..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          classNames={{ input: "w-1/2", mainWrapper: "w-1/2" }}
         />
-        <div className="my-4 w-1/2">
-          <label htmlFor="statusFilter">Filtrer par statut :</label>
-          <select
-            id="statusFilter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="ml-2 border px-2 py-2 font-bold rounded-md cursor-pointer"
-          >
-            <option value="all" className="cursor-pointer">
-              Toutes les demandes
-            </option>
-            <option value="pending" className="cursor-pointer">
-              En attente
-            </option>
-            <option value="completed" className="cursor-pointer">
-              Traitées
-            </option>
-            <option value="rejected" className="cursor-pointer">
-              Refusées
-            </option>
-          </select>
-        </div>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="all">Toutes les demandes</option>
+          <option value="pending">En attente</option>
+          <option value="completed">Traitées</option>
+          <option value="rejected">Refusées</option>
+        </select>
       </div>
 
       <Table>
@@ -297,7 +285,7 @@ export const TableWrapper = () => {
             <TableColumn key={column.uid}>{column.name}</TableColumn>
           )}
         </TableHeader>
-        <TableBody items={filteredRequests}>
+        <TableBody items={currentRequests}>
           {(request) => (
             <TableRow key={request.id}>
               <TableCell>{request.organisationName}</TableCell>
