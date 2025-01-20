@@ -39,7 +39,39 @@ export const TableWrapper = () => {
   const [provisionDetails, setProvisionDetails] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const requestsPerPage = 5;
-  const [sixes, setSixes] = useState("5xl");
+  const [statusFilter, setStatusFilter] = useState("all"); // "all", "pending", "completed", "rejected"
+  const [sixes, setSixes] = useState<
+    "5xl" | "sm" | "md" | "lg" | "xl" | "2xl" | "xs" | "3xl" | "4xl" | "full"
+  >("5xl");
+
+  // Si validation dynamique est nécessaire
+  const isValidSize = (
+    size: string
+  ): size is
+    | "5xl"
+    | "sm"
+    | "md"
+    | "lg"
+    | "xl"
+    | "2xl"
+    | "xs"
+    | "3xl"
+    | "4xl"
+    | "full" => {
+    const validSizes = [
+      "5xl",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+      "2xl",
+      "xs",
+      "3xl",
+      "4xl",
+      "full",
+    ];
+    return validSizes.includes(size);
+  };
 
   const fetchData = async () => {
     try {
@@ -173,13 +205,45 @@ export const TableWrapper = () => {
     }
   };
 
-  // Pagination logic
-  const filteredRequests = provisionRequests.filter((request) =>
-    Object.values(request)
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  const rejectProvisionRequest = async () => {
+    if (!provisionDetails?.id) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/provision_requests/${provisionDetails.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "rejected" }),
+        }
+      );
+
+      if (!res.ok) throw new Error("Erreur lors du refus de la demande.");
+
+      alert("Demande refusée avec succès !");
+      fetchData(); // Recharger toutes les données
+      onClose(); // Fermer le modal
+    } catch (error) {
+      console.error("Erreur :", error.message);
+      alert("Échec du refus de la demande : " + error.message);
+    }
+  };
+
+  const filteredRequests = provisionRequests
+    .filter((request) => {
+      // Appliquer le filtre par statut
+      if (statusFilter === "all") return true;
+      return request.status === statusFilter;
+    })
+    .filter((request) => {
+      // Appliquer le filtre de recherche
+      return Object.values(request)
+        .join(" ")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    });
 
   const indexOfLastRequest = currentPage * requestsPerPage;
   const indexOfFirstRequest = indexOfLastRequest - requestsPerPage;
@@ -189,28 +253,51 @@ export const TableWrapper = () => {
   );
   const totalPages = Math.ceil(filteredRequests.length / requestsPerPage);
 
-
   console.log(provisionDetails);
-  
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
       <h3 className="text-xl font-semibold">
         Liste des demandes d'approvisionnement
       </h3>
-      <Input
-        placeholder="Rechercher des demandes"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        classNames={{ input: "w-full", mainWrapper: "w-full" }}
-      />
+      <div className="flex justify-center items-center">
+        <Input
+          placeholder="Rechercher des demandes"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          classNames={{ input: "w-1/2", mainWrapper: "w-1/2" }}
+        />
+        <div className="my-4 w-1/2">
+          <label htmlFor="statusFilter">Filtrer par statut :</label>
+          <select
+            id="statusFilter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="ml-2 border px-2 py-2 font-bold rounded-md cursor-pointer"
+          >
+            <option value="all" className="cursor-pointer">
+              Toutes les demandes
+            </option>
+            <option value="pending" className="cursor-pointer">
+              En attente
+            </option>
+            <option value="completed" className="cursor-pointer">
+              Traitées
+            </option>
+            <option value="rejected" className="cursor-pointer">
+              Refusées
+            </option>
+          </select>
+        </div>
+      </div>
+
       <Table>
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn key={column.uid}>{column.name}</TableColumn>
           )}
         </TableHeader>
-        <TableBody items={currentRequests}>
+        <TableBody items={filteredRequests}>
           {(request) => (
             <TableRow key={request.id}>
               <TableCell>{request.organisationName}</TableCell>
@@ -219,17 +306,35 @@ export const TableWrapper = () => {
               <TableCell>{request.status}</TableCell>
               <TableCell>{request.provisionType}</TableCell>
               <TableCell>{request.paymentProviderDetails.label}</TableCell>
-              <TableCell>{request.paymentProviderDetails.type}</TableCell>
+              <TableCell>
+                <span className="font-bold">
+                  {request.paymentProviderDetails.type}
+                </span>
+              </TableCell>
               <TableCell>{request.paymentProviderDetails.number}</TableCell>
               <TableCell>
                 <Button
-                  color="primary"
+                  color={
+                    request.status === "completed"
+                      ? "success"
+                      : request.status === "pending"
+                      ? "warning"
+                      : request.status === "rejected"
+                      ? "danger"
+                      : "default"
+                  }
                   onPress={() =>
                     handleOpenModal(request.organisationId, request.id)
                   }
                   disabled={request.status === "completed"}
                 >
-                  Approvisionner
+                  {request.status === "completed"
+                    ? "confirmer"
+                    : request.status === "pending"
+                    ? "en attente"
+                    : request.status === "rejected"
+                    ? "refusée"
+                    : "indéfini"}
                 </Button>
               </TableCell>
             </TableRow>
@@ -255,7 +360,11 @@ export const TableWrapper = () => {
           Suivant
         </Button>
       </div>
-      <Modal isOpen={isOpen} onClose={onClose} size={sixes}>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size={isValidSize(sixes) ? sixes : "5xl"}
+      >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
             Demande d'approvisionnement de {orgDetails?.name}
@@ -291,7 +400,7 @@ export const TableWrapper = () => {
                       <img
                         src={provisionDetails.documentUrl}
                         alt="Preuve de paiement"
-                        className="h-12 w-12"
+                        className="h-12 w-12 hover:scale-110  transition-all"
                       />
                     </a>
                   )}
@@ -303,8 +412,8 @@ export const TableWrapper = () => {
                   <div> {provisionDetails?.paymentProviderDetails?.label}</div>
                 </div>
                 <div>
-                  <strong>ID DE L'ORGANISATION</strong>
-                  <div>{provisionDetails?.organisationId}</div>
+                  <strong>NOM DE L'ORGANISATION</strong>
+                  <div>{provisionDetails?.organisationName}</div>
                 </div>
                 <div>
                   <strong>OPERATEUR</strong>
@@ -312,7 +421,15 @@ export const TableWrapper = () => {
                 </div>
                 <div>
                   <strong>STATUT</strong>
-                  <div>{provisionDetails?.status}</div>
+                  <div>
+                    {provisionDetails?.status == "pending" ? (
+                      <Button color="danger">en attente</Button>
+                    ) : provisionDetails?.status == "completed" ? (
+                      <Button color="success">confirmé</Button>
+                    ) : (
+                      ""
+                    )}
+                  </div>
                 </div>
                 <div>
                   <strong>DATE ET HEURE</strong>
@@ -359,6 +476,9 @@ export const TableWrapper = () => {
             )}
           </ModalBody>
           <ModalFooter>
+            <Button color="warning" onPress={rejectProvisionRequest}>
+              Refuser
+            </Button>
             <Button color="danger" onPress={onClose}>
               Annuler
             </Button>
