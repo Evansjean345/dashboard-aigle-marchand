@@ -26,6 +26,18 @@ export const SidebarWrapper = () => {
   const pathname = usePathname();
   const { collapsed, setCollapsed } = useSidebarContext();
 
+  fetch("https://api.wave.com/v1", {
+    method: "GET",
+    headers: {
+      Authorization:
+        "Bearer wave_ci_prod_AmGvx1kFkrzRkryC1dnBSgrslJneLfwXt_pNcqWZLsWV5AY7HwGgfyuv5-lIIk7DD7L4B-xxC285IExwhVSV2MstZitIZYPFyg",
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => console.log(data))
+    .catch((error) => console.error("Erreur :", error));
+
   return (
     <aside className="h-screen z-[20] sticky top-0">
       {collapsed ? (
