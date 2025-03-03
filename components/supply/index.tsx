@@ -17,6 +17,10 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@nextui-org/react";
+import {
+  createSupplyAuthCookie,
+  deleteSupplyAuthCookie,
+} from "@/actions/supplyAuth.action";
 
 const columns = [
   { name: "Nom de l'organisation", uid: "organisationName" },
@@ -31,6 +35,13 @@ const columns = [
 ];
 
 export const TableWrapper = () => {
+  //for auth
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  //
   const [provisionRequests, setProvisionRequests] = useState([]);
   const [paymentProviders, setPaymentProviders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,6 +82,26 @@ export const TableWrapper = () => {
       "full",
     ];
     return validSizes.includes(size);
+  };
+
+  //Auth before Fetch Data
+  /** 🔑 Vérification des accès (login) */
+  const handleLogin = () => {
+    const validPhone = "5757575757";
+    const validPassword = "motdepasse";
+
+    if (phone === validPhone && password === validPassword) {
+      setIsAuthenticated(true);
+    } else {
+      setError("Numéro ou mot de passe incorrect");
+    }
+  };
+
+  /** 🚪 Déconnexion */
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setPhone("");
+    setPassword("");
   };
 
   const fetchData = async () => {
@@ -253,6 +284,33 @@ export const TableWrapper = () => {
 
   console.log(provisionDetails);
 
+  // Afficher le formulaire de connexion si l'utilisateur n'est pas connecté
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <h2 className="text-xl font-bold mb-4">Authentification Requise</h2>
+        {error && <div className="text-red-500 mb-2">{error}</div>}
+        <div className="flex flex-col w-80 gap-4">
+          <Input
+            label="Numéro de téléphone"
+            type="text"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          <Input
+            label="Mot de passe"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button color="primary" onPress={handleLogin}>
+            Confirmer
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
       <h3 className="text-xl font-semibold">
@@ -277,6 +335,9 @@ export const TableWrapper = () => {
           <option value="completed">Traitées</option>
           <option value="rejected">Refusées</option>
         </select>
+        <Button color="danger" onPress={handleLogout}>
+          Sortir
+        </Button>
       </div>
 
       <Table>
