@@ -48,6 +48,8 @@ export const TableWrapper = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [orgDetails, setOrgDetails] = useState(null);
   const [provisionDetails, setProvisionDetails] = useState(null);
+  const [amountRequested, setAmonutRequested] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const requestsPerPage = 5;
   const [statusFilter, setStatusFilter] = useState("all"); // "all", "pending", "completed", "rejected"
@@ -87,8 +89,8 @@ export const TableWrapper = () => {
   //Auth before Fetch Data
   /** 🔑 Vérification des accès (login) */
   const handleLogin = () => {
-    const validPhone = "5757575757";
-    const validPassword = "motdepasse";
+    const validPhone = "0707400716";
+    const validPassword = "30121978";
 
     if (phone === validPhone && password === validPassword) {
       setIsAuthenticated(true);
@@ -118,6 +120,12 @@ export const TableWrapper = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/provision_requests`
       );
       const provisionData = await provisionRes.json();
+
+      // Trier les demandes par date de création (les plus récentes en premier)
+      provisionData.sort(
+        (a, b) =>
+          new Date(b.createdAt)?.getTime() - new Date(a.createdAt)?.getTime()
+      );
 
       // 3. Transformer les données des demandes
       const transformedData = await Promise.all(
@@ -166,6 +174,72 @@ export const TableWrapper = () => {
     fetchData();
   }, []);
 
+  const fetchOrganisationDetails = async (organisationId) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/organisations`
+      );
+      const data = await response.json();
+
+      const organisation = data.find(
+        (org) => org.organisationId === organisationId
+      );
+      if (organisation) {
+        setOrgDetails(organisation);
+        setTotalAmount(organisation?.wallet?.balance + amountRequested);
+      }
+    } catch (error) {
+      console.error(
+        "Erreur lors de la récupération des infos de l'organisation",
+        error
+      );
+    }
+  };
+
+  const handleOpenModal = async (organisationId, provisionId, amount) => {
+    const selectedProvision = provisionRequests.find(
+      (request) =>
+        request.organisationId == organisationId && request.id === provisionId
+    );
+    if (selectedProvision) {
+      setProvisionDetails(selectedProvision);
+      setAmonutRequested(parseInt(selectedProvision.amount));
+      await fetchOrganisationDetails(organisationId);
+      onOpen();
+    }
+  };
+
+  const updateWallet = async (id, updatedWallet) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/organisations/${id}/wallet`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedWallet),
+        }
+      );
+
+      if (!res.ok) throw new Error("Erreur lors de la mise jour du wallet");
+      await await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/provision_requests/${provisionDetails.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "completed" }),
+        }
+      );
+
+      alert("Demande traitée avec succès");
+      fetchData();
+      onClose();
+    } catch (error) {
+      console.error("Erreur :", error.message);
+      alert("Echec de la mise à jour du wallet :" + error.message);
+    }
+  };
+
+  /*
   const handleOpenModal = async (organisationId, provisionId) => {
     try {
       const selectedProvision = provisionRequests.find(
@@ -234,7 +308,7 @@ export const TableWrapper = () => {
       console.error("Erreur :", error.message);
       alert("Échec de la mise à jour du wallet : " + error.message);
     }
-  };
+  }; */
 
   const rejectProvisionRequest = async () => {
     if (!provisionDetails?.id) return;
@@ -281,8 +355,6 @@ export const TableWrapper = () => {
     indexOfLastRequest
   );
   const totalPages = Math.ceil(filteredRequests.length / requestsPerPage);
-
-  console.log(provisionDetails);
 
   // Afficher le formulaire de connexion si l'utilisateur n'est pas connecté
   if (!isAuthenticated) {
@@ -335,7 +407,7 @@ export const TableWrapper = () => {
           <option value="completed">Traitées</option>
           <option value="rejected">Refusées</option>
         </select>
-        <Button color="danger" onPress={handleLogout}>
+        <Button color="primary" onPress={handleLogout}>
           Sortir
         </Button>
       </div>
@@ -373,7 +445,11 @@ export const TableWrapper = () => {
                       : "default"
                   }
                   onPress={() =>
-                    handleOpenModal(request.organisationId, request.id)
+                    handleOpenModal(
+                      request.organisationId,
+                      request.id,
+                      request.amount
+                    )
                   }
                   disabled={request.status === "completed"}
                 >
@@ -491,7 +567,8 @@ export const TableWrapper = () => {
               </div>
             </div>
             <strong>Confirmer la demande d'approvisionnement</strong>
-            {orgDetails && (
+            {/*
+             {orgDetails && (
               <div className="flex flex-col gap-4">
                 <Input
                   label="Nouveau solde (balance)"
@@ -522,26 +599,102 @@ export const TableWrapper = () => {
                   }
                 />
               </div>
+            )} */}
+            {orgDetails && (
+              <div className="flex flex-col gap-4">
+                {provisionDetails?.status === "completed" ? (
+                  <>
+                    <>
+                      <h2 className="text-success-400">Demande Traitée</h2>
+                      <Input
+                        label="Montant demandé"
+                        value={`${amountRequested} XOF`}
+                        readOnly
+                      />
+                      <Input
+                        label="Solde actuel"
+                        value={`${orgDetails.wallet?.balance} XOF`}
+                        readOnly
+                      />
+                    </>
+                  </>
+                ) : provisionDetails?.status === "rejected" ? (
+                  <>
+                    <h2 className="text-danger-400">Demande refusée</h2>
+                    <Input
+                      label="Solde actuel"
+                      value={`${orgDetails.wallet?.balance} XOF`}
+                      readOnly
+                    />
+                    <Input
+                      label="Montant demandé"
+                      value={`${amountRequested} XOF`}
+                      readOnly
+                    />
+                  </>
+                ) : provisionDetails?.status === "pending" ? (
+                  <>
+                    <h2 className="text-yellow-400">Demande en attente</h2>
+                    <Input
+                      label="Solde actuel"
+                      value={`${orgDetails.wallet?.balance} XOF`}
+                      readOnly
+                    />
+                    <Input
+                      label="Montant demandé"
+                      value={`${amountRequested} XOF`}
+                      readOnly
+                    />
+                    <Input
+                      label="Total après approvisionnement"
+                      value={`${
+                        orgDetails.wallet?.balance + amountRequested
+                      } XOF`}
+                      readOnly
+                    />
+                  </>
+                ) : (
+                  <></>
+                )}
+              </div>
             )}
           </ModalBody>
           <ModalFooter>
-            <Button color="warning" onPress={rejectProvisionRequest}>
-              Refuser
-            </Button>
-            <Button color="danger" onPress={onClose}>
-              Annuler
-            </Button>
-            <Button
-              color="success"
-              onPress={() =>
-                updateWallet(orgDetails.organisationId, {
-                  balance: orgDetails.wallet?.balance,
-                  transfer: orgDetails.wallet?.transfer,
-                })
-              }
-            >
-              Confirmer
-            </Button>
+            {provisionDetails?.status === "pending" ? (
+              <>
+                <Button color="warning" onPress={rejectProvisionRequest}>
+                  Refuser
+                </Button>
+                <Button color="danger" onPress={onClose}>
+                  Annuler
+                </Button>
+                <Button
+                  color="success"
+                  onPress={() =>
+                    updateWallet(orgDetails.organisationId, {
+                      balance: orgDetails.wallet?.balance + amountRequested,
+                    })
+                  }
+                >
+                  Confirmer
+                </Button>
+              </>
+            ) : provisionDetails?.status === "completed" ? (
+              <>
+                <Button color="primary" onPress={onClose}>
+                  fermer
+                </Button>
+              </>
+            ) : provisionDetails?.status === "rejected" ? (
+              <>
+                {" "}
+                <Button color="primary" onPress={onClose}>
+                  fermer
+                </Button>
+              </>
+            ) : (
+              <></>
+            )}
           </ModalFooter>
         </ModalContent>
       </Modal>
