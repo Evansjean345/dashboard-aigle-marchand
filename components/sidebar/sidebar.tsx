@@ -21,6 +21,7 @@ import { useSidebarContext } from "../layout/layout-context";
 //import { ChangeLogIcon } from "../icons/sidebar/changelog-icon";
 import { usePathname } from "next/navigation";
 import { ViewIcon } from "../icons/sidebar/view-icon";
+import { ExportIcon } from "../icons/accounts/export-icon";
 
 export const SidebarWrapper = () => {
   const pathname = usePathname();
@@ -39,7 +40,7 @@ export const SidebarWrapper = () => {
     .catch((error) => console.error("Erreur :", error));
 
   return (
-    <aside className="h-screen z-[20] sticky top-0">
+    <aside className="h-screen z-[20] sticky top-0 ">
       {collapsed ? (
         <div className={Sidebar.Overlay()} onClick={setCollapsed} />
       ) : null}
@@ -51,7 +52,7 @@ export const SidebarWrapper = () => {
         <div className={Sidebar.Header()}>
           <CompaniesDropdown />
         </div>
-        <div className="flex flex-col justify-between h-full">
+        <div className="flex flex-col justify-between h-full overflow-y-auto">
           <div className={Sidebar.Body()}>
             {/* Components/Home/Content folder  */}
             <SidebarItem
@@ -64,7 +65,7 @@ export const SidebarWrapper = () => {
               {/* Components/Account folder */}
               <SidebarItem
                 isActive={pathname === "/accounts"}
-                title="Maillage réseau"
+                title="Master et pdv"
                 icon={<AccountsIcon />}
                 href="/accounts"
               />
@@ -110,6 +111,12 @@ export const SidebarWrapper = () => {
                 title="Qr code"
                 href="/qr"
                 icon={<QrcodeIcon />}
+              />
+              <SidebarItem
+                isActive={pathname === "/stats"}
+                title="Statistics"
+                href="/stats"
+                icon={<ExportIcon />}
               />
             </SidebarMenu>
             {/*

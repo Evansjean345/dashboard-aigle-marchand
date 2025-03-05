@@ -62,7 +62,7 @@ export const UserDropdown = () => {
           className="text-danger"
           onPress={handleLogout}
         >
-          Log Out
+          Se deconnecter
         </DropdownItem>
         <DropdownItem key="switch">
           <DarkModeSwitch />

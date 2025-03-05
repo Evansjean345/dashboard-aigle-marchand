@@ -5,9 +5,12 @@ import { Switch } from "@nextui-org/react";
 export const DarkModeSwitch = () => {
   const { setTheme, resolvedTheme } = useNextTheme();
   return (
-    <Switch
-      isSelected={resolvedTheme === "dark" ? true : false}
-      onValueChange={(e) => setTheme(e ? "dark" : "light")}
-    />
+    <div className="flex items-center">
+      <Switch
+        isSelected={resolvedTheme === "dark" ? true : false}
+        onValueChange={(e) => setTheme(e ? "dark" : "light")}
+      />
+      {resolvedTheme === "dark" ? "Mode clair" : "Mode sombre"}
+    </div>
   );
 };

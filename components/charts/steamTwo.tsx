@@ -7,7 +7,7 @@ type SeriesData = {
   data: number[];
 };
 
-export const Steam = () => {
+export const SteamTwo = () => {
   const { resolvedTheme } = useNextTheme();
   const [series, setSeries] = useState<SeriesData[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -225,7 +225,7 @@ export const Steam = () => {
           Exporter CSV
         </button>
         <button
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="bg-[#002d61] p-2 text-xs text-white rounded-lg hover:border-2 transition-all ease-in-out hover:bg-[white] hover:text-[#002d61] hover:border-[#002d61]"
         >
           {resolvedTheme === "dark" ? "Mode Clair" : "Mode Sombre"}
@@ -248,7 +248,7 @@ export const Steam = () => {
         <p className="text-center text-default-500">Chargement...</p>
       ) : (
         <div id="chart">
-          <Chart options={options} series={series} type="area" height={525} />
+          <Chart options={options} series={series} type="line" height={525} />
         </div>
       )}
 
