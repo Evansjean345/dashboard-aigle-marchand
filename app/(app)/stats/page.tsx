@@ -1,8 +1,8 @@
 import React from "react";
-import { Table } from "@/components/stats";
+//import { Table } from "@/components/stats";
 
 const stats = () => {
-  return <Table />;
+  return <></>;
 };
 
 export default stats;
