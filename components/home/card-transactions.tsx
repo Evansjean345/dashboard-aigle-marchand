@@ -85,7 +85,7 @@ export const CardTransactions = () => {
                 </div>
 
                 {/* Nom de l'organisation */}
-                <span className="text-default-900 font-semibold">
+                <span className="text-default-900 font-semibold text-xs">
                   {transaction.organisation?.name || "Nom inconnu"}
                 </span>
 
@@ -100,7 +100,7 @@ export const CardTransactions = () => {
                 <div>
                   <span className="text-default-500 text-xs">
                     {transaction.createdAt
-                      ? new Date(transaction.createdAt).toLocaleDateString()
+                      ? new Date(transaction.createdAt).toUTCString()
                       : "Date inconnue"}
                   </span>
                 </div>
