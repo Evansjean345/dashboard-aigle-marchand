@@ -10,6 +10,7 @@ import { CardTransactions } from "./card-transactions";
 import { Link } from "@nextui-org/react";
 import NextLink from "next/link";
 import { CardBalance4 } from "./card-balance4";
+import { CardBalance5 } from "./card-balance5";
 
 const Chart = dynamic(
   () => import("../charts/steam").then((mod) => mod.Steam),
@@ -20,16 +21,17 @@ const Chart = dynamic(
 
 export const Content = () => (
   <div className="h-full lg:px-6">
-    <div className="flex justify-center gap-4 xl:gap-6 pt-3 px-4 lg:px-0  flex-wrap xl:flex-nowrap sm:pt-10 max-w-[90rem] mx-auto w-full">
+    <div className="flex justify-center flex-col gap-4 xl:gap-6 pt-3 px-4 lg:px-0  flex-wrap xl:flex-nowrap sm:pt-10 max-w-[90rem] mx-auto w-full">
       <div className="mt-6 gap-6 flex flex-col w-full">
         {/* Card Section Top */}
         <div className="flex flex-col gap-2">
           <h3 className="text-xl font-semibold">Available Balance</h3>
-          <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-2 gap-3  justify-center w-full">
+          <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-5 gap-1  justify-center w-full">
             <CardBalance1 />
             <CardBalance2 />
             <CardBalance3 />
             <CardBalance4 />
+            <CardBalance5 />
           </div>
         </div>
 
@@ -44,8 +46,8 @@ export const Content = () => (
       </div>
 
       {/* Left Section */}
-      <div className="mt-4 gap-2 flex flex-col xl:max-w-md w-full">
-        <h3 className="text-xl font-semibold">Section</h3>
+      <div className="mt-4 gap-2 flex flex-col w-full">
+        <h3 className="text-xl font-semibold">5 derniers transactions</h3>
         <div className="flex flex-col justify-center gap-4 flex-wrap md:flex-nowrap md:flex-col">
           {/**  <CardAgents /> */}
           <CardTransactions />

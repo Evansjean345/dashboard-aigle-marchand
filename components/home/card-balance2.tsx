@@ -1,53 +1,47 @@
 import { Card, CardBody } from "@nextui-org/react";
-import React from "react";
-import { Community } from "../icons/community";
+import React, { useEffect, useState } from "react";
+//import { Community } from "../icons/community";
 
 export const CardBalance2 = () => {
+  const [sold, setSold] = useState(null);
+  useEffect(() => {
+    const fetchSold = async () => {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/balance/hub2`;
+      try {
+        const response = await fetch(url, {
+          method: "GET", // Ou "POST", "PUT", "DELETE" selon ton besoin
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP : ${response.status}`);
+        }
+
+        const data = await response.json();
+        setSold(data);
+        console.log("Données reçues :", data);
+      } catch (error) {
+        console.error("Erreur lors de la requête :", error);
+      }
+    };
+    fetchSold();
+    console.log(sold);
+  }, []);
+
   return (
-    <Card className="xl:max-w-xs bg-[#e70002] rounded-xl shadow-md px-3 w-full">
-      <CardBody className="py-5">
-        <div className="flex gap-2.5">
-          {/*<Community /> */}
-          <img src="/orange.jpg" className="h-12 w-12" alt="" />
-          <div className="flex flex-col">
-            <span className="text-white">Solde</span>
-            <span className="text-white text-xs">0 FCFA</span>
+    <Card className=" bg-gradient-to-br from-[#f15522] to-[#9a3a0a] rounded-2xl shadow-2xl  px-1 py-2 w-full relative overflow-hidden">
+      <CardBody>
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col text-xs text-gray-200 font-semibold">
+            <span>
+              Collect : {sold?.collectionAccount?.[0]?.availableBalance} XOF
+            </span>
+            <span>
+              Transfer : {sold?.transferAccount?.[0]?.availableBalance} XOF
+            </span>
+            <span>solde hub2</span>
           </div>
+          <img src="/hub2.png" alt="" className="w-12 h-8" />
         </div>
-        {/*
-         <div className="flex gap-2.5 py-2 items-center">
-          <span className="text-default-900 text-xl font-semibold">
-            $12,138
-          </span>
-          <span className="text-danger text-xs">- 4.5%</span>
-        </div>
-        <div className="flex items-center gap-6">
-          <div>
-            <div>
-              <span className="font-semibold text-success-600 text-xs">
-                {"↓"}
-              </span>
-              <span className="text-xs">11,930</span>
-            </div>
-            <span className="text-default-900 text-xs">USD</span>
-          </div>
-
-          <div>
-            <div>
-              <span className="font-semibold text-danger text-xs">{"↑"}</span>
-              <span className="text-xs">54,120</span>
-            </div>
-            <span className="text-default-900 text-xs">USD</span>
-          </div>
-
-          <div>
-            <div>
-              <span className="font-semibold text-danger text-xs">{"⭐"}</span>
-              <span className="text-xs">150</span>
-            </div>
-            <span className="text-default-900 text-xs">VIP</span>
-          </div>
-        </div> */}
       </CardBody>
     </Card>
   );
