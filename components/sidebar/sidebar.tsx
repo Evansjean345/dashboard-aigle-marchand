@@ -118,6 +118,12 @@ export const SidebarWrapper = () => {
                 href="/stats"
                 icon={<ExportIcon />}
               />
+              <SidebarItem
+                isActive={pathname === "/virement"}
+                title="Ordre de virement"
+                href="/virement"
+                icon={<BalanceIcon />}
+              />
             </SidebarMenu>
             {/*
   

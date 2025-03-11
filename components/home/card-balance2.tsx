@@ -18,29 +18,35 @@ export const CardBalance2 = () => {
 
         const data = await response.json();
         setSold(data);
-        console.log("Données reçues :", data);
+        // console.log("Données reçues :", data);
       } catch (error) {
         console.error("Erreur lors de la requête :", error);
       }
     };
     fetchSold();
-    console.log(sold);
+    // console.log(sold);
   }, []);
 
   return (
     <Card className=" bg-gradient-to-br from-[#f15522] to-[#9a3a0a] rounded-2xl shadow-2xl  px-1 py-2 w-full relative overflow-hidden">
       <CardBody>
         <div className="flex justify-between items-center">
-          <div className="flex flex-col text-xs text-gray-200 font-semibold">
+          <div className="flex flex-col text-xs text-gray-200 font-semibold mt-4">
+            <span className="absolute left-4 top-1 text-sm">solde hub2</span>
+            <span>
+              Total :{" "}
+              {sold?.collectionAccount?.[0]?.availableBalance +
+                sold?.transferAccount?.[0]?.availableBalance}{" "}
+              XOF
+            </span>
             <span>
               Collect : {sold?.collectionAccount?.[0]?.availableBalance} XOF
             </span>
             <span>
               Transfer : {sold?.transferAccount?.[0]?.availableBalance} XOF
             </span>
-            <span>solde hub2</span>
           </div>
-          <img src="/hub2.png" alt="" className="w-12 h-8" />
+          <img src="/hub2.png" alt="" className="w-16 h-12" />
         </div>
       </CardBody>
     </Card>
