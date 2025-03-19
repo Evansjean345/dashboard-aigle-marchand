@@ -113,7 +113,7 @@ export const AddUser = () => {
                           {countries?.map((country) => (
                             <option
                               key={country.isoTwo}
-                              value={country.isoTwo.toLowerCase()}
+                              value={country.id}
                             >
                               {country.flag} {country.isoThree}
                             </option>
