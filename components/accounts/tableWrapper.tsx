@@ -17,7 +17,6 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@nextui-org/react";
-import Link from "next/link";
 
 const columns = [
   { name: "Nom complet", uid: "fullname" },
@@ -105,7 +104,7 @@ const TableWrapper = () => {
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
-      <h3 className="text-xl font-semibold">Tous les utilisateurs</h3>
+      <h3 className="text-xl font-semibold">Tous les clients</h3>
 
       {/* Recherche */}
       <Input

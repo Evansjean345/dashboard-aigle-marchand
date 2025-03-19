@@ -73,7 +73,7 @@ export const Steam = () => {
             if (!acc[transactionType])
               acc[transactionType] = { dates: [], amounts: [] };
             acc[transactionType].dates.push(
-              new Date(createdAt).toLocaleDateString()
+              new Date(createdAt)?.toLocaleDateString()
             );
             acc[transactionType].amounts.push(amount);
             return acc;
