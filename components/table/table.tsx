@@ -14,6 +14,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Chip,
 } from "@nextui-org/react";
 import { DotsIcon } from "@/components/icons/accounts/dots-icon";
 import { ExportIcon } from "@/components/icons/accounts/export-icon";
@@ -180,6 +181,7 @@ export const TableWrapper = () => {
 
     fetchUsers();
   }, []);
+  console.log(users);
 
   // Gérer la recherche dynamique
   const handleSearch = (event) => {
@@ -256,6 +258,35 @@ export const TableWrapper = () => {
     }
   };
 
+  const toggleUserStatus = async (userId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "active" ? "inactive" : "active";
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/${userId}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Échec de la mise à jour du statut");
+
+      setModalMessage(`Utilisateur ${newStatus} avec succès`);
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, status: newStatus } : user
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      setModalMessage("Erreur lors de la mise à jour du statut");
+    } finally {
+      setIsSuccessModalOpen(true);
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-4">
       {/* Barre de navigation */}
@@ -278,7 +309,7 @@ export const TableWrapper = () => {
       </ul>
 
       {/* Titre de la section */}
-      <h3 className="text-xl font-semibold">Tous les utilisateurs</h3>
+      <h3 className="text-xl font-semibold">Tous les clients</h3>
 
       {/* Barre de recherche et options */}
       <div className="flex justify-between flex-wrap gap-4 items-center">
@@ -334,7 +365,9 @@ export const TableWrapper = () => {
                 {new Date(item.createdAt).toLocaleDateString()}
               </TableCell>
               <TableCell>
-                {new Date(item.updatedAt).toLocaleDateString()}
+                <Chip color={item.status === "active" ? "success" : "danger"}>
+                  {item.status}
+                </Chip>
               </TableCell>
               <TableCell>
                 <img
@@ -372,16 +405,22 @@ export const TableWrapper = () => {
                     >
                       Initialiser code pin
                     </DropdownItem>
-                    {/*
-                     <DropdownItem
+                    <DropdownItem
                       // key="edit"
                       // shortcut="⌘⇧E"
                       startContent={
                         <EditDocumentIcon className={iconClasses} />
                       }
+                      onClick={() =>
+                        toggleUserStatus(item?.userUuid, item.status)
+                      }
                     >
-                      Modifier
-                    </DropdownItem> */}
+                      {item.status === "active"
+                        ? "desactiver le compte"
+                        : item.status === "inactive"
+                        ? "activer le compte"
+                        : ""}
+                    </DropdownItem>
                     <DropdownItem
                       // key="delete"
                       className="text-danger"

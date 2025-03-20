@@ -47,6 +47,9 @@ const TableWrapper = () => {
     fetchOrganisations();
   }, []);
 
+  console.log(organisations);
+  
+
   // Filtrer les organisations en fonction du texte de recherche
   const filteredOrganisations = organisations.filter((organisation) =>
     Object.values(organisation)

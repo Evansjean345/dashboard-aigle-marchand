@@ -38,7 +38,7 @@ const TableWrapper = () => {
     const fetchVirement = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_SECONDARY}/api/admin/transaction/all?operation=virement`
+          `${process.env.NEXT_PUBLIC_API_URL_THREE}/api/admin/transaction/all?operation=virement`
         );
         const result = await res.json();
 
@@ -131,7 +131,9 @@ const TableWrapper = () => {
               <TableCell>{virement.fees} XOF</TableCell>
               <TableCell>{virement.totalAmount} XOF</TableCell>
               <TableCell>{virement.operationType}</TableCell>
-              <TableCell>{new Date(virement.dateTransaction).toUTCString()}</TableCell>
+              <TableCell>
+                {new Date(virement.dateTransaction).toUTCString()}
+              </TableCell>
               <TableCell>
                 <span
                   style={{

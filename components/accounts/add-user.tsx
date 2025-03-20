@@ -46,7 +46,7 @@ export const AddUser = () => {
       fullname,
       phone: phone,
       email,
-      country_code: countrycode,
+      country_id: countrycode,
       password,
       company_name: companyName,
       company_phone_number: companyPhoneNumber,
@@ -55,7 +55,7 @@ export const AddUser = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+        `${process.env.NEXT_PUBLIC_API_URL_SECONDARY}/api/auth/register`,
         {
           method: "POST",
           headers: {
@@ -111,10 +111,7 @@ export const AddUser = () => {
                         >
                           <option value="">Sélectionnez un pays</option>
                           {countries?.map((country) => (
-                            <option
-                              key={country.isoTwo}
-                              value={country.id}
-                            >
+                            <option key={country.isoTwo} value={country.id}>
                               {country.flag} {country.isoThree}
                             </option>
                           ))}
