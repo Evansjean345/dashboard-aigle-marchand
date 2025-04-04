@@ -181,7 +181,6 @@ export const TableWrapper = () => {
 
     fetchUsers();
   }, []);
-  console.log(users);
 
   // Gérer la recherche dynamique
   const handleSearch = (event) => {
@@ -252,7 +251,7 @@ export const TableWrapper = () => {
       setModalMessage("Utilisateur supprimé avec succès");
     } catch (error) {
       setModalMessage("Erreur lors de la suppression de l'utilisateur");
-      console.error(error);
+      console.error(error.message);
     } finally {
       setIsSuccessModalOpen(true);
     }

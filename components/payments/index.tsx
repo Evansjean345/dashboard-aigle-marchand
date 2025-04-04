@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import {
-  Avatar,
   Button,
   Input,
   Table,
@@ -10,29 +9,43 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
 } from "@nextui-org/react";
-import Link from "next/link";
 import { ExportIcon } from "@/components/icons/accounts/export-icon";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
+import { useRouter } from "next/navigation";
 
 // Liste des colonnes à afficher
 const columns = [
   { name: "Référence", uid: "reference" },
   { name: "Montant", uid: "amount" },
-  { name: "Devise", uid: "currency" },
+  // { name: "Devise", uid: "currency" },
   { name: "Type de transaction", uid: "transactionType" },
   { name: "Statut", uid: "status" },
-  { name: "Méthode de paiement", uid: "paymentMethod" },
-  { name: "OTP", uid: "otp" },
+  { name: "Cpte payeur", uid: "ctpeP" },
+  { name: "Cpte Beneficiare", uid: "ctpeB" },
+  // { name: "Méthode de paiement", uid: "paymentMethod" },
+  // { name: "OTP", uid: "otp" },
   { name: "Fournisseur", uid: "provider" },
   { name: "Pays", uid: "country" },
-  { name: "Numéro de téléphone", uid: "phone_number" },
-  { name: "Description", uid: "description" },
+  // { name: "Numéro de téléphone", uid: "phone_number" },
+  // { name: "Description", uid: "description" },
   { name: "Type de compte", uid: "accountType" },
   { name: "Organisation", uid: "organisation" },
-  { name: "Catégorie", uid: "category" },
-  { name: "Transaction ID", uid: "transactionId" },
+  // { name: "Catégorie", uid: "category" },
+  // { name: "Transaction ID", uid: "transactionId" },
   { name: "Date de création", uid: "createdAt" },
-  { name: "Date de mise à jour", uid: "updatedAt" },
+  // { name: "Date de mise à jour", uid: "updatedAt" },
   { name: "Actions", uid: "actions" },
 ];
 
@@ -40,7 +53,12 @@ const TableWrapper = () => {
   const [transactions, setTransactions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(""); // Nouveau state pour la recherche
-  const [transactionsPerPage] = useState(5);
+  const [transactionsPerPage] = useState(12);
+  const router = useRouter();
+
+  // État pour le modal
+  const [transactionDetails, setTransactionDetails] = useState(null); // Détails de l'utilisateur
+  const { isOpen, onOpen, onClose } = useDisclosure(); // Hook pour gérer le modal
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -51,10 +69,16 @@ const TableWrapper = () => {
 
       // Désérialisation de `paymentDetails` pour chaque transaction
       const formattedData = data.map((transaction) => {
-        if (transaction.paymentDetails) {
+        if (transaction.paymentDetails || transaction.details) {
           // Si `paymentDetails` est une chaîne JSON, la convertir en objet
           try {
             transaction.paymentDetails = JSON.parse(transaction.paymentDetails);
+            transaction.details.senderDetails = JSON.parse(
+              transaction.details.senderDetails
+            );
+            transaction.details.receiveDetails = JSON.parse(
+              transaction.details.receiveDetails
+            );
           } catch (error) {
             console.error("Erreur de désérialisation de paymentDetails", error);
           }
@@ -93,6 +117,46 @@ const TableWrapper = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
+
+  // Fonction pour récupérer les détails d'une transaction
+  const fetchTransactionDetails = async (reference) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/transactions/${reference}`
+      );
+      if (!res.ok) throw new Error("Utilisateur introuvable");
+      const data = await res.json();
+      // Désérialisation des champs JSON
+      if (data.paymentDetails) {
+        try {
+          data.paymentDetails = JSON.parse(data.paymentDetails);
+        } catch (error) {
+          console.error("Erreur de désérialisation de paymentDetails", error);
+        }
+      }
+
+      if (data.details) {
+        try {
+          data.details.senderDetails = JSON.parse(data.details.senderDetails);
+        } catch (error) {
+          console.error("Erreur de désérialisation de senderDetails", error);
+        }
+
+        try {
+          data.details.receiveDetails = JSON.parse(data.details.receiveDetails);
+        } catch (error) {
+          console.error("Erreur de désérialisation de receiveDetails", error);
+        }
+      }
+
+      setTransactionDetails(data); // Met à jour les données affichées dans le modal
+      onOpen(); // Ouvre le modal
+    } catch (error) {
+      console.error("Erreur :", error.message);
+      setTransactionDetails(null);
+    }
+  };
+
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
@@ -134,57 +198,141 @@ const TableWrapper = () => {
             <TableRow key={transaction.transactionId}>
               {/* Affichage de toutes les données de la transaction */}
               <TableCell>{transaction.reference}</TableCell>
-              <TableCell>{transaction.amount}</TableCell>
-              <TableCell>{transaction.currency}</TableCell>
+              <TableCell>
+                <span>{transaction.amount}</span>
+                &nbsp;
+                <span>XOF</span>
+              </TableCell>
+              {/** <TableCell>{transaction.currency}</TableCell> */}
               <TableCell>{transaction.transactionType}</TableCell>
               <TableCell>
                 <span
                   style={{
-                    color: transaction.status === "success" ? "green" : "red",
+                    color:
+                      transaction.status === "success"
+                        ? "green"
+                        : transaction.status === "failed"
+                        ? "red"
+                        : "yellow",
                     fontWeight: "bold",
                   }}
                 >
                   {transaction.status}
                 </span>
               </TableCell>
-              <TableCell>{transaction.paymentDetails?.service}</TableCell>
-              <TableCell>{transaction.paymentDetails?.otp}</TableCell>
               <TableCell>
-                {transaction.paymentDetails?.provider === "wave" ? (
-                  <img src="/wave.png" alt="" className="h-8 w-8" />
-                ) : transaction.paymentDetails?.provider === "orange" ? (
-                  <img src="/orange.jpg" alt="" className="h-8 w-8" />
-                ) : transaction.paymentDetails?.provider === "mtn" ? (
-                  <img src="/mtn.png" alt="" className="h-8 w-8" />
-                ) : transaction.paymentDetails?.provider === "moov" ? (
-                  <img src="/moov.png" alt="" className="h-8 w-8" />
-                ) : transaction.transactionType === "airtime" ? (
-                  <img src="/air.png" alt="" className="h-8 w-8" />
-                ) : (
-                  "non spécifié"
-                )}
+                {transaction.details === null
+                  ? transaction.paymentDetails?.phone_number
+                  : transaction.details !== null
+                  ? transaction.details?.senderDetails?.phone_number
+                  : ""}
               </TableCell>
+              <TableCell>
+                {transaction.details === null
+                  ? transaction.paymentDetails?.phone_number
+                  : transaction.details !== null
+                  ? transaction.details?.receiveDetails?.phone_number
+                  : ""}
+              </TableCell>
+              {/* <TableCell>{transaction.paymentDetails?.service}</TableCell> */}
+              {/*  <TableCell>{transaction.paymentDetails?.otp}</TableCell> */}
+              <TableCell>
+                {(() => {
+                  // Vérifier si paymentDetails contient un service
+                  if (transaction.paymentDetails?.service) {
+                    return (
+                      <img
+                        src="/v-c.webp"
+                        alt="credit-card"
+                        className="h-8 w-8 object-fill"
+                      />
+                    );
+                  }
+
+                  // Déterminer le provider
+                  const provider =
+                    transaction.paymentDetails?.provider ||
+                    transaction.details?.senderDetails?.provider;
+
+                  // Objet de correspondance entre provider et image
+                  const providerImages = {
+                    wave: "/wave.png",
+                    orange: "/orange.jpg",
+                    mtn: "/mtn.png",
+                    moov: "/moov.png",
+                    air: "/air.png",
+                  };
+
+                  // Vérifier si le provider a une image correspondante
+                  if (provider && providerImages[provider]) {
+                    return (
+                      <img
+                        src={providerImages[provider]}
+                        alt={provider}
+                        className="h-8 w-8"
+                      />
+                    );
+                  }
+
+                  // Si transactionType est "airtime", afficher une image spécifique
+                  if (transaction.transactionType === "airtime") {
+                    return (
+                      <img src="/air.png" alt="airtime" className="h-8 w-8" />
+                    );
+                  }
+
+                  // Si aucun provider trouvé, ne rien afficher
+                  return null;
+                })()}
+              </TableCell>
+
               <TableCell>
                 {transaction.paymentDetails?.country_code?.toUpperCase()}
               </TableCell>
-              <TableCell>{transaction.paymentDetails?.phone_number}</TableCell>
-              <TableCell>
+              {/*   <TableCell>{transaction.paymentDetails?.phone_number}</TableCell> */}
+              {/*   <TableCell>
                 {transaction.description || "Aucune description"}
-              </TableCell>
+              </TableCell> */}
               <TableCell>{transaction.organisation?.accountType}</TableCell>
               <TableCell>{transaction.organisation?.name}</TableCell>
-              <TableCell>{transaction.category}</TableCell>
-              <TableCell>{transaction.transactionId}</TableCell>
+              {/*<TableCell>{transaction.category}</TableCell> */}
+              {/*   <TableCell>{transaction.transactionId}</TableCell> */}
               <TableCell>
-                {new Date(transaction.createdAt).toLocaleDateString()}
+                {new Date(transaction.createdAt).toUTCString()}
               </TableCell>
-              <TableCell>
+              {/*      <TableCell>
                 {new Date(transaction.updatedAt).toLocaleDateString()}
-              </TableCell>
+              </TableCell> */}
               <TableCell>
-                <Link href={`/payments/${transaction.organisationId}`}>
-                  <Button size="sm">Voir</Button>
-                </Link>
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button variant="bordered">Plus d'actions</Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    aria-label="Dropdown menu with icons"
+                    variant="faded"
+                  >
+                    <DropdownItem
+                      // key="new"
+                      // shortcut="⌘N"
+                      onClick={() => {
+                        router.push(`/payments/${transaction.organisationId}`);
+                      }}
+                    >
+                      Voir Toutes les transaction de{" "}
+                      {transaction?.organisation?.name}
+                    </DropdownItem>
+                    <DropdownItem
+                      //  key="copy"
+                      // shortcut="⌘C"
+                      onPress={() =>
+                        fetchTransactionDetails(transaction.reference)
+                      }
+                    >
+                      Voir les details
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
               </TableCell>
             </TableRow>
           )}
@@ -203,6 +351,137 @@ const TableWrapper = () => {
           Suivant
         </Button>
       </div>
+
+      {/* Modal pour afficher les détails */}
+      <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+        <ModalContent>
+          <ModalHeader>Détails de l'utilisateur</ModalHeader>
+          <ModalBody>
+            {transactionDetails ? (
+              <div className="flex w-full  gap-3 py-2 px-4">
+                <div className="flex flex-col gap-2 w-1/2">
+                  <label className="font-semibold">
+                    Reference de la transaction
+                  </label>
+                  <Input value={transactionDetails?.reference} readOnly />
+                  <label className="font-semibold">Nom de l'organisation</label>
+                  <Input
+                    value={transactionDetails?.organisation?.name}
+                    readOnly
+                  />
+                  <label className="font-semibold">Montant</label>
+                  <Input
+                    value={`${transactionDetails?.amount} ${transactionDetails?.currency}`}
+                    readOnly
+                  />
+                </div>
+                <div className="flex flex-col gap-2 w-1/2">
+                  {transactionDetails?.paymentDetails === null ? (
+                    <>
+                      {" "}
+                      <label className="font-semibold">Cpte payeur</label>
+                      <Input
+                        value={`${transactionDetails?.details?.senderDetails?.phone_number}`}
+                        readOnly
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <label className="font-semibold">Cpte payeur</label>
+                      <Input
+                        value={`${transactionDetails?.paymentDetails?.phone_number}`}
+                        readOnly
+                      />
+                    </>
+                  )}
+                  {transactionDetails?.details === null ? (
+                    <></>
+                  ) : (
+                    <>
+                      <label className="font-semibold">Cpte beneficiare</label>{" "}
+                      <Input
+                        value={
+                          transactionDetails?.details?.senderDetails
+                            ?.phone_number
+                        }
+                        readOnly
+                      />{" "}
+                    </>
+                  )}
+                  <label className="font-semibold">
+                    Date de la transaction
+                  </label>
+                  <Input
+                    value={new Date(
+                      transactionDetails?.createdAt
+                    ).toUTCString()}
+                    readOnly
+                  />
+                  <label className="font-semibold">Fournisseur</label>
+                  {(() => {
+                    // Vérifier si paymentDetails contient un service
+                    if (transactionDetails.paymentDetails?.service) {
+                      return (
+                        <img
+                          src="/v-c.webp"
+                          alt="credit-card"
+                          className="h-20 w-20"
+                        />
+                      );
+                    }
+
+                    // Déterminer le provider
+                    const provider =
+                      transactionDetails.paymentDetails?.provider ||
+                      transactionDetails.details?.senderDetails?.provider;
+
+                    // Objet de correspondance entre provider et image
+                    const providerImages = {
+                      wave: "/wave.png",
+                      orange: "/orange.jpg",
+                      mtn: "/mtn.png",
+                      moov: "/moov.png",
+                      air: "/air.png",
+                    };
+
+                    // Vérifier si le provider a une image correspondante
+                    if (provider && providerImages[provider]) {
+                      return (
+                        <img
+                          src={providerImages[provider]}
+                          alt={provider}
+                          className="h-16 w-16"
+                        />
+                      );
+                    }
+
+                    // Si transactionType est "airtime", afficher une image spécifique
+                    if (transactionDetails.transactionType === "airtime") {
+                      return (
+                        <img
+                          src="/air.png"
+                          alt="airtime"
+                          className="h-16 w-16"
+                        />
+                      );
+                    }
+
+                    // Si aucun provider trouvé, ne rien afficher
+                    return null;
+                  })()}
+                </div>
+              </div>
+            ) : (
+              "chargment des informations en cours"
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" onPress={onClose}>
+              Fermer
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

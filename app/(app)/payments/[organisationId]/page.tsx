@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import TableWrapper from "@/components/payments/tableWrapper"; // Assurez-vous d'avoir le bon chemin pour l'importation
+import TableWrapper from "@/components/payments/tableWrapper"; // Assurez-vous que le chemin est correct
 
 const OrganisationPage = ({
   params,
@@ -9,35 +9,57 @@ const OrganisationPage = ({
   params: { organisationId: string };
 }) => {
   const [organisation, setOrganisation] = useState<any>(null);
-  const [transactions, setTransactions] = useState<any[]>([]); // Déclare les transactions comme un tableau
+  const [transactions, setTransactions] = useState<any[]>([]);
   const { organisationId } = params;
 
-  // Fetch organisation data
-  useEffect(() => {
-    const fetchOrganisationData = async () => {
-      try {
-        // Récupérer les informations de l'organisation
-        const organisationRes = await fetch(
+  // Fonction pour parser un champ JSON imbriqué
+  const parseJSONField = (field: any) => {
+    try {
+      return typeof field === "string" ? JSON.parse(field) : field;
+    } catch (error) {
+      console.error("Erreur de parsing JSON :", error);
+      return null;
+    }
+  };
+
+  // Fonction pour récupérer les données
+  const fetchData = async () => {
+    try {
+      const [organisationRes, transactionsRes] = await Promise.all([
+        fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/organisations/${organisationId}`
-        );
-        const organisationData = await organisationRes.json();
-        setOrganisation(organisationData);
-
-        // Récupérer les transactions
-        const transactionsRes = await fetch(
+        ),
+        fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/organisations/${organisationId}/transactions`
-        );
-        const transactionsData = await transactionsRes.json();
-        setTransactions(transactionsData);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des données:", error);
-      }
-    };
+        ),
+      ]);
 
-    fetchOrganisationData();
+      if (!organisationRes.ok || !transactionsRes.ok) {
+        throw new Error("Erreur de chargement des données");
+      }
+
+      const organisationData = await organisationRes.json();
+      const transactionsData = await transactionsRes.json();
+
+      // Désérialisation des champs JSON
+      const parsedTransactions = transactionsData.map((transaction: any) => ({
+        ...transaction,
+        paymentDetails: parseJSONField(transaction.paymentDetails),
+        organisation: parseJSONField(transaction.organisation),
+        details: parseJSONField(transaction.details),
+      }));
+
+      setOrganisation(organisationData);
+      setTransactions(parsedTransactions);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données :", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
   }, [organisationId]);
 
-  // Affichage conditionnel pendant le chargement
   if (!organisation || transactions.length === 0) {
     return <p>Chargement...</p>;
   }

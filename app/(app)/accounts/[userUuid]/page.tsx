@@ -177,6 +177,9 @@ const UserPage = ({ params }: { params: { userUuid: string } }) => {
     }
   };
 
+  console.log(organisations);
+  
+
   // Colonnes du tableau pour afficher les informations utilisateur
   /*
   const columns = [
