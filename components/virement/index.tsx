@@ -32,7 +32,7 @@ const TableWrapper = () => {
   const [virement, setVirement] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(""); // Nouveau state pour la recherche
-  const [virementPerPage] = useState(5);
+  const [virementPerPage] = useState(15);
 
   useEffect(() => {
     const fetchVirement = async () => {

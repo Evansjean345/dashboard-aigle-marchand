@@ -67,7 +67,7 @@ interface TableWrapperProps {
 const TableWrapper: React.FC<TableWrapperProps> = ({ transactions }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const transactionsPerPage = 5;
+  const transactionsPerPage = 15;
 
   const [transactionDetails, setTransactionDetails] =
     useState<Transaction | null>(null);

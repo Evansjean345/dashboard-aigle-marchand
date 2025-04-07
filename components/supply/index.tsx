@@ -51,7 +51,7 @@ export const TableWrapper = () => {
   const [amountRequested, setAmonutRequested] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const requestsPerPage = 5;
+  const requestsPerPage = 10;
   const [statusFilter, setStatusFilter] = useState("all"); // "all", "pending", "completed", "rejected"
   const [sixes, setSixes] = useState<
     "5xl" | "sm" | "md" | "lg" | "xl" | "2xl" | "xs" | "3xl" | "4xl" | "full"

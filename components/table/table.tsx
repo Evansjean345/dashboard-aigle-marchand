@@ -162,7 +162,7 @@ export const TableWrapper = () => {
   const [filteredUsers, setFilteredUsers] = useState([]); // Liste filtrée
   const [searchTerm, setSearchTerm] = useState(""); // Terme de recherche
   const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(5);
+  const [usersPerPage] = useState(15);
   const [modalMessage, setModalMessage] = useState(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   //

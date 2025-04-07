@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import dynamic from "next/dynamic";
-import { TableWrapper } from "../table/table";
+import TableWrapper from "../payments/index";
 import { CardBalance1 } from "./card-balance1";
 import { CardBalance2 } from "./card-balance2";
 import { CardBalance3 } from "./card-balance3";
@@ -63,7 +63,7 @@ export const Content = () => (
           Liste des utilisateurs
         </h3> */}
         <Link
-          href="/accounts"
+          href="/payments"
           as={NextLink}
           color="primary"
           className="cursor-pointer"

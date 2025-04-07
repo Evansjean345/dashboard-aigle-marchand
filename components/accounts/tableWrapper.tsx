@@ -32,7 +32,7 @@ const TableWrapper = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
+  const usersPerPage = 15;
 
   // État pour le modal
   const [userDetails, setUserDetails] = useState(null); // Détails de l'utilisateur
